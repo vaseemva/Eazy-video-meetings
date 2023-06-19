@@ -1,5 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:zoom_clone/provider/user_provider.dart';
 import 'package:zoom_clone/resources/auth_methods.dart';
 import 'package:zoom_clone/screens/home_screen.dart';
 import 'package:zoom_clone/screens/login_screen.dart';
@@ -8,7 +11,12 @@ import 'package:zoom_clone/utils/colors.dart';
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  await dotenv.load(fileName: '.env');
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+    )
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -18,14 +26,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Techno Video Meetings',
+      title: 'Eazy Video Meetings',
       theme:
           ThemeData.dark().copyWith(scaffoldBackgroundColor: backgroundColor),
       home: StreamBuilder(
         stream: AuthMethods().authChanges,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            
             return const Center(
               child: CircularProgressIndicator(),
             );

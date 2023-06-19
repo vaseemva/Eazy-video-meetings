@@ -1,4 +1,8 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zoom_clone/provider/user_provider.dart';
+import 'package:zoom_clone/screens/live_page.dart';
 import 'package:zoom_clone/utils/colors.dart';
 import 'package:zoom_clone/widgets/home_meeting_button.dart';
 
@@ -10,6 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _controller =
+      TextEditingController(text: Random().nextInt(900000 + 100000).toString());
   int _page = 0;
   onpageChanged(int page) {
     setState(() {
@@ -18,65 +24,78 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<UserProvider>(context, listen: false);
+      provider.refreshUser();
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("Meet & Chat"),
+        title: const Text("Eazy Live Streamings"),
         centerTitle: true,
         backgroundColor: backgroundColor,
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              HomeMeetingButton(
-                onpressed: () {},
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: _controller,
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30))),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Center(
+              child: HomeMeetingButton(
+                onpressed: () =>
+                    jumptoLive(context, liveId: _controller.text, isHost: true),
                 icon: Icons.videocam,
-                text: "New Meeting",
+                text: "New Live",
               ),
-              HomeMeetingButton(
-                  onpressed: () {},
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            Center(
+              child: HomeMeetingButton(
+                  onpressed: () => jumptoLive(context,
+                      liveId: _controller.text, isHost: false),
                   icon: Icons.add_box_rounded,
-                  text: "Join Meeting"),
-              HomeMeetingButton(
-                  onpressed: () {},
-                  icon: Icons.calendar_today,
-                  text: "Schedule"),
-              HomeMeetingButton(
-                  onpressed: () {},
-                  icon: Icons.arrow_upward_outlined,
-                  text: "Share Screen"),
-            ],
-          ),
-          const Expanded(
-              child: Center(
-            child: Text("Create/Join Meetings with just a click!",style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 17  
-            ),),
-          ))
-        ],
+                  text: "Join Live"),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.comment_bank), label: "Meet & char"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.lock_clock), label: "Meetings"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: "contacts"),
+              icon: Icon(Icons.comment_bank), label: "Create/Join"),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings), label: "Settings"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.comment_bank), label: "Meet & char"),
         ],
         onTap: onpageChanged,
         currentIndex: _page,
       ),
     );
+  }
+
+  jumptoLive(BuildContext context,
+      {required String liveId, required bool isHost}) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => LivePage(liveID: liveId, isHost: isHost),
+    ));
   }
 }

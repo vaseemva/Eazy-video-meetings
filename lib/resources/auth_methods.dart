@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:zoom_clone/models/user_model.dart';
 import 'package:zoom_clone/utils/utils.dart';
 
 class AuthMethods {
@@ -9,7 +10,7 @@ class AuthMethods {
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Stream<User?> get authChanges=>_auth.authStateChanges();
+  Stream<User?> get authChanges => _auth.authStateChanges();
 
   Future<bool> signinWithGoogle(BuildContext context) async {
     bool res = false;
@@ -43,5 +44,16 @@ class AuthMethods {
       res = false;
     }
     return res;
+  }
+
+  Future<UserModel> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+    DocumentSnapshot snap =
+        await _firestore.collection('users').doc(currentUser.uid).get();
+    var snapshot = snap.data() as Map<String, dynamic>;
+    return UserModel(
+      uid: snapshot["uid"],
+      username: snapshot["username"],
+    );
   }
 }
